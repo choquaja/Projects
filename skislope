@@ -1,0 +1,112 @@
+(*Datatypes*)
+
+datatype name = Rouelles | Cachette | Clocheret|DeuxTetes |MontBlanc | Combettes | Belvedere | Violettes | Tomelet | Vesaille|BoisDeSaule|Arpette|Golet|Granges|Arroles|Malgovert|Clapet|Comborciere|Lutins|Muguet|MontBlancChair|CachetteChair|VesailleLift|TomeletLift|Funiculaire|CombettesChair|ClocheretChair|ComborciereChair;
+datatype length = Short | Medium | Long;
+datatype difficulty =  Blue | Red | Black;
+datatype segment = Slope of name*length*difficulty | Lift of name;
+
+
+
+(*Values*)
+
+(*Slopes in Arc1600  (All lowercase to avoid conflicting with datatype values)*)
+val deuxTetes = Slope(DeuxTetes,Short,Black);
+val belvedere= Slope(Belvedere,Long,Blue);
+val montBlanc = Slope(MontBlanc,Long,Blue);
+val rouelles = Slope(Rouelles,Long,Black);
+val cachette = Slope(Cachette,Medium,Red);
+val violettes= Slope(Violettes,Long,Red);
+val tomelet= Slope(Tomelet,Short,Red);
+val vesaille = Slope(Vesaille,Short,Blue);
+val boisDeSaule =Slope(BoisDeSaule,Long,Blue);
+val arpette = Slope(Arpette,Long,Blue);
+val golet = Slope(Golet,Long,Blue);
+val granges = Slope(Granges,Long,Red);
+val arroles = Slope(Arroles,Medium,Red);
+val malgovert = Slope(Malgovert,Medium,Red);
+val clapet = Slope(Clapet,Short,Blue);
+val comborciere = Slope(Comborciere,Long,Black);
+val lutins = Slope(Lutins,Short,Blue);
+val muguet = Slope(Muguet,Short,Black);
+val combettes= Slope(Combettes,Short,Blue);
+val slopeList=[deuxTetes,belvedere,montBlanc,rouelles,cachette,violettes,tomelet,vesaille,boisDeSaule,arpette,golet,granges,arroles,malgovert,clapet,comborciere,lutins,muguet,combettes];
+
+
+(*Lifts in Arc1600*)
+val montBlancChair = Lift(MontBlancChair);
+val combettesChair=Lift(CombettesChair);
+val vesailleLift= Lift(VesailleLift);
+val tomeletLift= Lift(TomeletLift);
+val funiculaire = Lift(Funiculaire);
+val cachetteChair=Lift(CachetteChair);
+val clocheretChair = Lift(ClocheretChair);
+val comborciereChair= Lift(ComborciereChair);
+
+
+(*Connecting Slopes/Lifts*)
+(*Lifts and Slopes Long List as Relations since most slopes have more than one connection.*)
+val chairConnections = [(MontBlancChair,Belvedere),(MontBlancChair,MontBlanc),(CombettesChair,VesailleLift),(CombettesChair,MontBlanc),(CombettesChair,Combettes),(VesailleLift,Tomelet),(VesailleLift,Vesaille),(TomeletLift,Golet),(Funiculaire,Granges),(Funiculaire,BoisDeSaule),(CachetteChair,Cachette),(CachetteChair,Arroles),(CachetteChair,Belvedere),(ClocheretChair,Clapet),(ClocheretChair,Clocheret),(ClocheretChair,Muguet),(ComborciereChair,Comborciere),(ComborciereChair,Malgovert),(ComborciereChair,Belvedere) ];
+val slopeConnections =[(DeuxTetes,MontBlanc),(Belvedere,Rouelles),(Belvedere,MontBlanc),(Belvedere,Arroles),(Belvedere,Cachette),(Belvedere,Arpette),(Belvedere,Lutins),(MontBlanc,DeuxTetes),(MontBlanc,Cachette),(MontBlanc,Combettes),(Rouelles,Arpette),(Rouelles,Golet),(Cachette,Arpette),(Cachette,Combettes),(Cachette,MontBlanc),(Violettes,Granges),(Tomelet,Golet),(Vesaille,Combettes),(Vesaille,MontBlanc),(Arpette,Golet),(Arpette,Cachette),(Arpette,MontBlanc),(Arpette,ClocheretChair),(Arroles,MontBlanc),(Malgovert,MontBlanc),(Clapet,Belvedere),(Clapet,Clocheret),(Clapet,Cachette),(Clapet,Arroles)];
+
+
+(*Functions*)
+
+(*Helper Functions*)
+fun getFirst(a,b)= a;
+fun getSecond(a,b)= b;
+fun extractName(Slope(name,_,_))=name;
+fun extractLength(Slope(_,length,_))=length;
+fun extractDifficulty(Slope(_,_,difficulty))=difficulty;
+fun extractTwoNames(slopeA,slopeB) = [extractName(slopeA)]@[extractName(slopeB)];
+
+
+(*Main*)
+(*Give it a length and the list of slopes and it will return all slopes of that length.*)
+fun getAllLength(length,[])=[]
+|getAllLength(length,a::slopeList)= if length = extractLength(a) then a::getAllLength(length,slopeList) 
+else getAllLength(length,slopeList);
+ 
+(* Takes a difficulty and a list of slopes and returns a list of all slopes of that difficulty.*)
+fun getAllDiff(difficulty,[])=[]
+|getAllDiff(difficulty,a::slopeList)= if difficulty = extractDifficulty(a) then a::getAllDiff(difficulty,slopeList) 
+else getAllDiff(difficulty,slopeList);
+
+
+
+(*Function to check connection between lifts and chairs. Takes a name and a list and returns a list.*)
+fun connection(name,[])=[]
+|connection(name,a::rest)= if getFirst(a)= name then getSecond(a)::connection(name,rest) else connection(name,rest);
+
+
+
+(*Comparaison Functions*)
+
+(*Takes two slopes as input. Returns the name of the slope with longest length as a list. If both slopes are equal in length, returns both names in a list.*)
+fun compareLength(slopeA,slopeB)=  if (extractLength(slopeA)=Long andalso extractLength(slopeB)=Medium) then extractName(slopeA)::[]
+								else 
+									if(extractLength(slopeA)=Long andalso extractLength(slopeB)=Short) then extractName(slopeA)::[]
+								else 
+									if(extractLength(slopeA)=Medium andalso extractLength(slopeB)=Long) then extractName(slopeB)::[]
+								else 
+									if(extractLength(slopeA)=Short andalso extractLength(slopeB)=Long) then extractName(slopeB)::[]
+								else 
+									if(extractLength(slopeA)=Medium andalso extractLength(slopeB)=Short) then extractName(slopeA)::[]
+								else 
+									if(extractLength(slopeA)=Short andalso extractLength(slopeB)=Medium) then extractName(slopeB)::[]
+								else 
+									extractTwoNames(slopeA,slopeB);
+
+(*Takes two slopes as input. Returns the name of the slope with the hardest difficulty as a list.(Black>Red>Blue). If both slopes have equal difficulty it will return both names as a list.*)									
+fun compareDifficulty(slopeA,slopeB)=  if (extractDifficulty(slopeA)=Black andalso extractDifficulty(slopeB)=Red) then extractName(slopeA)::[]
+								else 
+									if(extractDifficulty(slopeA)=Black andalso extractDifficulty(slopeB)=Blue) then extractName(slopeA)::[]
+								else 
+									if(extractDifficulty(slopeA)=Red andalso extractDifficulty(slopeB)=Black) then extractName(slopeB)::[]
+								else 
+									if(extractDifficulty(slopeA)=Blue andalso extractDifficulty(slopeB)=Black) then extractName(slopeB)::[]
+								else 
+									if(extractDifficulty(slopeA)=Red andalso extractDifficulty(slopeB)=Blue) then extractName(slopeA)::[]
+								else 
+									if(extractDifficulty(slopeA)=Blue andalso extractDifficulty(slopeB)=Red) then extractName(slopeB)::[]
+								else 
+									extractTwoNames(slopeA,slopeB);
